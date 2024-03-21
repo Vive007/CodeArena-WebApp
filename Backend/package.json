@@ -1,0 +1,24 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend for the project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Vivek Kumar, Sudesh Nayak",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vive007/CODE-CONNECT-.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Vive007/CODE-CONNECT-/issues"
+  },
+  "homepage": "https://github.com/Vive007/CODE-CONNECT-#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.1"
+  }
+}
