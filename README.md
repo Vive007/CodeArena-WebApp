@@ -1,49 +1,32 @@
-# CODE-CONNECT-
-Real Time Chat Application
-This application built using Node.js, Express, Socket.io, Mongoose, RESTful Web Service.
+Codeforces api
+reference link: https://codeforces.com/apiHelp
 
-s2
+------------------------------------------------------------------------------------------------------------
+#authenticating the codeforces user
 
-Features
-Uses Express as the application Framework.
-Real-time communication between a client and a server using Socket.io.
-Uses MongoDB, Mongoose for storing messages and querying data.
-Uses RESTful Web Service for serve different platforms
-Installation
-Running Locally
-Make sure you have Node.js and npm install.
+-- select a random problem from the problemset and give it to user
+-- ask user to submit a wrong answer to the problem within 2 mins
+-- check the #user.status for 2 mins with count = 1
+-- if the random problem (contest id and index) == (submitted contest id and index) && verdict == "WRONG_ANSWER" user is authenticated.
 
-Clone or Download the repository
+Links:
+https://codeforces.com/apiHelp/methods#problemset.problems
 
-git clone https://github.com/batuhaniskr/real-time-chat-application.git
-$ cd Real-Time-Chat-Application
-Install Dependencies
+https://codeforces.com/apiHelp/methods#user.status
 
-npm install
-MongoDB start for need
+------------------------------------------------------------------------------------------------------------
 
-mongod
-command from a different terminal.
-Start the Application
+#challenging friends 
 
-node app.js
-Application runs from localhost:3000.
+2 users user1 and user2
 
-How It Works
-A database called "chat_db" named is created via code. The nickname, msg, group information is also kept in the table named Messages.
+--user1 will select a topic tag and rating and duration required(max 1hour)
+--user1 will challenge the user2 and if user2 accepts the challenge && both are online both will get redirect link to an arena page 
+--codeforces provides json containing all problems and we'll filter the json according to the rating
+--select random question out of the filtered json
+--send the link to the arena page and start the timer
+-- every 3 seconds check the #user.status for last 3 submissions 
+--user who submitted in least amount of time will be winner
+--arena will gets destroyed after the timer ends.
 
-User to user, As a publication broadcast or group in the room messaging. User to user messaging:
-
- /w username messagetext
-the message is sent as.
-Sockets
-Having an active connection opened between the client and the server so client can send and receive data. This allows real-time communication using TCP sockets. This is made possible by Socket.io.
-
-The client starts by connecting to the server through a socket(maybe also assigned to a specific namespace). Once connections is successful, client and server can emit and listen to events.
-
-RESTful
-Using HTTP requests, we can use the respective action to trigger every of these four CRUD operations.
-POST is used to send data to a server — Create
-GET is used to fetch data from a server — Read
-PUT is used to send and update data — Update
-DELETE is used to delete data — Delete
+------------------------------------------------------------------------------------------------------------
