@@ -1,5 +1,5 @@
 const helloService = require('../services/helloService');
-getHello= asyncWrapper(async (req, res) => {
+const getHello=(async (req, res) => {
         try {
             const id = req.params.id;
             const helloMessage = await helloService.getHello(id);

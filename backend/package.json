@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Vive007/CODE-CONNECT-#readme",
   "dependencies": {
+    "axios": "^1.6.8",
     "body-parser": "^1.20.2",
     "express": "^4.19.1"
   }
