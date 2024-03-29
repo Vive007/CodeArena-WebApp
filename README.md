@@ -20,13 +20,11 @@ https://codeforces.com/apiHelp/methods#user.status
 
 2 users user1 and user2
 
---user1 will select a topic tag and rating and duration required(max 1hour)
---user1 will challenge the user2 and if user2 accepts the challenge && both are online both will get redirect link to an arena page 
---codeforces provides json containing all problems and we'll filter the json according to the rating
---select random question out of the filtered json
---send the link to the arena page and start the timer
--- every 3 seconds check the #user.status for last 3 submissions 
---user who submitted in least amount of time will be winner
---arena will gets destroyed after the timer ends.
+-- Any user can create a lobby and will send a invitation to join the lobby.
+-- only 2 users can join the lobby , when 2 users join the lobby they will get menu
+-- each user will select their difficulty level and topic tag and it will get displayed to both user
+-- if both users ok with the choosen option they will press start button 
+-- if both users press start button timer starts and for each user random question appears 
+-- those who solves first will be the winner.
 
 ------------------------------------------------------------------------------------------------------------

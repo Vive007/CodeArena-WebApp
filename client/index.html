@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby System</title>
+</head>
+<body>
+    <input type="text" id="usernameInput" placeholder="Enter your username">
+    <button id="createLobbyBtn">Create Lobby</button>
+    <input type="text" id="lobbyIdInput" placeholder="Enter lobby ID">
+    <button id="joinLobbyBtn">Join Lobby</button>
+    <div id="chatBox" style="height: 300px; overflow-y: scroll;"></div>
+    <input type="text" id="messageInput" placeholder="Type your message">
+    <button id="sendMessageBtn">Send Message</button>
+
+    <script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
+    
+    <script>
+        const socket = io.connect('http://localhost:3000/');
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const createLobbyBtn = document.getElementById('createLobbyBtn');
+        const joinLobbyBtn = document.getElementById('joinLobbyBtn');
+        const lobbyIdInput = document.getElementById('lobbyIdInput');
+
+        // Event listener for creating a lobby
+        createLobbyBtn.addEventListener('click', () => {
+            const username = document.getElementById('usernameInput').value;
+            socket.emit('create_lobby', username, (lobbyId) => {
+                console.log('Lobby created with ID:', lobbyId);
+            });
+        });
+
+        // Event listener for joining a lobby
+        joinLobbyBtn.addEventListener('click', () => {
+            const lobbyId = lobbyIdInput.value;
+            const username = document.getElementById('usernameInput').value;
+            socket.emit('join_lobby', lobbyId, username, (success, message) => {
+                if (success) {
+                    console.log('Joined lobby:', lobbyId);
+                } else {
+                    console.log('Failed to join lobby:', message);
+                }
+            });
+        });
+
+        // Event listener for sending a message
+        sendMessageBtn.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message !== '') {
+                socket.emit('chat_message', message);
+                messageInput.value = '';
+            }
+        });
+
+        // Event listener for receiving chat messages
+        socket.on('chat_message', (data) => {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${data.username}: ${data.message}`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // Event listener for receiving user join messages
+        socket.on('user_joined', (data) => {
+            const joinMessageElement = document.createElement('div');
+            joinMessageElement.textContent = `${data.username} joined the lobby`;
+            chatBox.appendChild(joinMessageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // Event listener for receiving user leave messages
+        socket.on('user_left', (data) => {
+            const leaveMessageElement = document.createElement('div');
+            leaveMessageElement.textContent = `${data.username} left the lobby`;
+            chatBox.appendChild(leaveMessageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>

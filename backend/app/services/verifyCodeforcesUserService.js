@@ -8,8 +8,9 @@ async function myCallback(id, index, userId) {
     
         const submittedId = response.data.result[0]['id'];
         const submittedIndex = response.data.result[0]['problem']['index'];
+        const verdict = response.data.result[0]['verdict'];
         
-        if (submittedId == id && submittedIndex == index) {
+        if (submittedId == id && submittedIndex == index && verdict == "COMPILATION_ERROR") {
             return true;
         } else {
             return false;
