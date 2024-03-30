@@ -27,7 +27,7 @@
     </style>
 </head>
 <body>
-    <input type="text" id="usernameInput" placeholder="Enter your username">
+    <input type="text" id="usernameInput" placeholder="Enter your username" required>
     <button id="createLobbyBtn">Create Lobby</button>
     <input type="text" id="lobbyIdInput" placeholder="Enter lobby ID">
     <button id="joinLobbyBtn">Join Lobby</button>
@@ -57,7 +57,7 @@
         const createLobbyBtn = document.getElementById('createLobbyBtn');
         const joinLobbyBtn = document.getElementById('joinLobbyBtn');
         const lobbyIdInput = document.getElementById('lobbyIdInput');
-
+        
         createLobbyBtn.addEventListener('click', () => {
             const username = document.getElementById('usernameInput').value;
             socket.emit('create_lobby', username, (lobbyId) => {
@@ -99,19 +99,30 @@
             // Send checkbox update to server
             const checkbox = document.getElementById(isCreator ? 'user1Checkbox' : 'user2Checkbox');
             checkbox.addEventListener('change', () => {
-                socket.emit('update_checkbox', lobbyId, checkbox.checked);
+                socket.emit('update_checkbox', lobbyId, checkbox.checked,checkbox.id);
             });
+
+
+            
         }
 
         // Listen for checkbox updates from server
+        // Listen for checkbox updates from server
         socket.on('checkbox_updated', (data) => {
-            const checkbox = document.getElementById(data.userId === 'User 1' ? 'user1Checkbox' : 'user2Checkbox');
+            const checkbox = document.getElementById(data.checkboxId);
             checkbox.checked = data.isChecked;
             if (document.getElementById('user1Checkbox').checked && document.getElementById('user2Checkbox').checked) {
+                socket.emit('start_timer', data.lobbyId);
                 document.getElementById('timer').style.display = 'block';
                 startTimer();
             }
         });
+
+        socket.on('timer_started',(data)=>{
+            document.getElementById('timer').style.display = 'block';
+            startTimer();
+        });
+
 
         function startTimer() {
             // Implement your timer logic here

@@ -21,6 +21,7 @@ https://codeforces.com/apiHelp/methods#user.status
 2 users user1 and user2
 
 -- Any user can create a lobby and will send a invitation to join the lobby.
+-- lobby will be in the another web page separate from the main chat application.
 -- only 2 users can join the lobby , when 2 users join the lobby they will get menu
 -- each user will select their difficulty level and topic tag and it will get displayed to both user
 -- if both users ok with the choosen option they will press start button 

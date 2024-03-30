@@ -61,15 +61,19 @@ socket.on('join_lobby', (lobbyId, userId, callback) => {
 });
 
 
-socket.on('update_checkbox', (lobbyId, isChecked) => {
+socket.on('update_checkbox', (lobbyId, isChecked, checkboxId) => {
   const lobby = lobbies[lobbyId];
   if (lobby) {
-      const user = lobby.users.find(user => user.id === socket.id);
-      if (user) {
-          user.isChecked = isChecked;
-          io.to(lobbyId).emit('checkbox_updated', { userId: user.userId, isChecked });
-      }
+    const senderId = socket.id;
+    // const senderUsername = lobby.users.find(user => user.id === senderId).username;
+    const recipientId = lobby.users.find(user => user.id !== senderId).id;
+    io.to(recipientId).emit('checkbox_updated', { lobbyId, isChecked, checkboxId });
   }
+});
+
+socket.on('start_timer', (lobbyId) => {
+  // Broadcast the event to all users in the lobby
+  io.to(lobbyId).emit('timer_started');
 });
 
 socket.on('disconnect', () => {
