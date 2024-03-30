@@ -4,80 +4,125 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lobby System</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .user-panel {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 45%;
+        }
+        .user-panel input {
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .timer {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <input type="text" id="usernameInput" placeholder="Enter your username">
     <button id="createLobbyBtn">Create Lobby</button>
     <input type="text" id="lobbyIdInput" placeholder="Enter lobby ID">
     <button id="joinLobbyBtn">Join Lobby</button>
-    <div id="chatBox" style="height: 300px; overflow-y: scroll;"></div>
-    <input type="text" id="messageInput" placeholder="Type your message">
-    <button id="sendMessageBtn">Send Message</button>
+
+    <div id="lobbyDetails" style="display: none;">
+        <div class="container">
+            <div class="user-panel" id="user1Panel">
+                <h3>User 1</h3>
+                <input type="text" id="user1Name" placeholder="User 1 Name" readonly>
+                <input type="text" id="user1Message" placeholder="Enter message">
+                <input type="checkbox" id="user1Checkbox"> Start Timer
+            </div>
+            <div class="user-panel" id="user2Panel">
+                <h3>User 2</h3>
+                <input type="text" id="user2Name" placeholder="User 2 Name" readonly>
+                <input type="text" id="user2Message" placeholder="Enter message">
+                <input type="checkbox" id="user2Checkbox"> Start Timer
+            </div>
+        </div>
+        <div class="timer" id="timer" style="display: none;"></div>
+    </div>
 
     <script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
-    
     <script>
         const socket = io.connect('http://localhost:3000/');
-        const chatBox = document.getElementById('chatBox');
-        const messageInput = document.getElementById('messageInput');
-        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const lobbyDetails = document.getElementById('lobbyDetails');
         const createLobbyBtn = document.getElementById('createLobbyBtn');
         const joinLobbyBtn = document.getElementById('joinLobbyBtn');
         const lobbyIdInput = document.getElementById('lobbyIdInput');
 
-        // Event listener for creating a lobby
         createLobbyBtn.addEventListener('click', () => {
             const username = document.getElementById('usernameInput').value;
             socket.emit('create_lobby', username, (lobbyId) => {
                 console.log('Lobby created with ID:', lobbyId);
+                showLobbyDetails(lobbyId, true);
             });
         });
 
-        // Event listener for joining a lobby
         joinLobbyBtn.addEventListener('click', () => {
             const lobbyId = lobbyIdInput.value;
             const username = document.getElementById('usernameInput').value;
             socket.emit('join_lobby', lobbyId, username, (success, message) => {
                 if (success) {
                     console.log('Joined lobby:', lobbyId);
+                    showLobbyDetails(lobbyId, false);
                 } else {
                     console.log('Failed to join lobby:', message);
                 }
             });
         });
 
-        // Event listener for sending a message
-        sendMessageBtn.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message !== '') {
-                socket.emit('chat_message', message);
-                messageInput.value = '';
+        function showLobbyDetails(lobbyId, isCreator) {
+            lobbyDetails.style.display = 'block';
+            const user1Panel = document.getElementById('user1Panel');
+            const user2Panel = document.getElementById('user2Panel');
+
+            if (isCreator) {
+                user1Panel.querySelector('input').readOnly = false;
+                user1Panel.querySelector('input[type="checkbox"]').disabled = false;
+                user2Panel.querySelector('input').readOnly = true;
+                user2Panel.querySelector('input[type="checkbox"]').disabled = true;
+            } else {
+                user2Panel.querySelector('input').readOnly = false;
+                user2Panel.querySelector('input[type="checkbox"]').disabled = false;
+                user1Panel.querySelector('input').readOnly = true;
+                user1Panel.querySelector('input[type="checkbox"]').disabled = true;
+            }
+
+            // Send checkbox update to server
+            const checkbox = document.getElementById(isCreator ? 'user1Checkbox' : 'user2Checkbox');
+            checkbox.addEventListener('change', () => {
+                socket.emit('update_checkbox', lobbyId, checkbox.checked);
+            });
+        }
+
+        // Listen for checkbox updates from server
+        socket.on('checkbox_updated', (data) => {
+            const checkbox = document.getElementById(data.userId === 'User 1' ? 'user1Checkbox' : 'user2Checkbox');
+            checkbox.checked = data.isChecked;
+            if (document.getElementById('user1Checkbox').checked && document.getElementById('user2Checkbox').checked) {
+                document.getElementById('timer').style.display = 'block';
+                startTimer();
             }
         });
 
-        // Event listener for receiving chat messages
-        socket.on('chat_message', (data) => {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${data.username}: ${data.message}`;
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        // Event listener for receiving user join messages
-        socket.on('user_joined', (data) => {
-            const joinMessageElement = document.createElement('div');
-            joinMessageElement.textContent = `${data.username} joined the lobby`;
-            chatBox.appendChild(joinMessageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        // Event listener for receiving user leave messages
-        socket.on('user_left', (data) => {
-            const leaveMessageElement = document.createElement('div');
-            leaveMessageElement.textContent = `${data.username} left the lobby`;
-            chatBox.appendChild(leaveMessageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
+        function startTimer() {
+            // Implement your timer logic here
+            // Example:
+            let time = 0;
+            const timerElement = document.getElementById('timer');
+            const timerInterval = setInterval(() => {
+                time++;
+                timerElement.textContent = 'Timer: ' + time + ' seconds';
+            }, 1000);
+        }
     </script>
 </body>
 </html>

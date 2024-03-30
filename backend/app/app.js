@@ -61,6 +61,16 @@ socket.on('join_lobby', (lobbyId, userId, callback) => {
 });
 
 
+socket.on('update_checkbox', (lobbyId, isChecked) => {
+  const lobby = lobbies[lobbyId];
+  if (lobby) {
+      const user = lobby.users.find(user => user.id === socket.id);
+      if (user) {
+          user.isChecked = isChecked;
+          io.to(lobbyId).emit('checkbox_updated', { userId: user.userId, isChecked });
+      }
+  }
+});
 
 socket.on('disconnect', () => {
   // Find and remove user from all lobbies
