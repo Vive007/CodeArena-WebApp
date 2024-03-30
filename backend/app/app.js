@@ -45,16 +45,25 @@ io.on('connection', (socket) => {
   
       callback({ lobbyId: lobbyId });
   });
-  socket.on('joinLobby', ({ lobbyId, userId }, callback) => {
+  socket.on('joinLobby', ({ lobbyId, userId }) => {
     if (lobbies[lobbyId]) {
         socket.join(lobbyId);
         lobbies[lobbyId].usersId.push(userId); // Assuming you have a structure to store users in the lobby
         lobbies[lobbyId].sockets.push(socket.id);
-        callback({ message: `User ${userId} has joined lobby ${lobbyId}` });
     } else {
-        callback({ message: `Lobby ${lobbyId} does not exist` });
+        // Optionally, you can send an error message to the user joining the lobby
+        socket.emit('joinLobbyError', { message: `Lobby ${lobbyId} does not exist` });
     }
   });
+
+  socket.on('userinfo', (lobbyId, callback) => {
+    if (lobbies[lobbyId]) {
+        const userIds = lobbies[lobbyId].usersId;
+        callback({ userIds });
+    } else {
+        callback({ error: `Lobby ${lobbyId} does not exist` });
+    }
+});
 
   socket.on('send_info', ({ userId, lobbyId, info }) => {
     // Assuming you have a structure to store info in the lobby

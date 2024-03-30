@@ -1,21 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Chat Rooms</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.min.js"></script>
-  <script src="script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lobby System</title>
+  <style>
+    #lobbyUsersBox {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Chat Rooms</h1>
-  <div id="room-list"></div>
-  <div id="chat-container">
-    <ul id="messages"></ul>
-    <input type="text" id="message-input" placeholder="Enter message">
-    <button id="send-message">Send</button>
+  <h1>Lobby System</h1>
+  <label for="userId">Enter User ID:</label>
+  <input type="text" id="userId">
+  <button onclick="createLobby()">Create Lobby</button>
+  <br><br>
+  <label for="lobbyId">Enter Lobby ID:</label>
+  <input type="text" id="lobbyId">
+  <button onclick="joinLobby()">Join Lobby</button>
+  <br><br>
+  <div id="lobbyStatus"></div>
+  <div id="lobbyUsersBox">
+    <h2>Users in Lobby:</h2>
+    <ul id="lobbyUsersList"></ul>
   </div>
 
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
-  <script src="./client.js"></script>
+
+  <script src="client.js"></script>
 </body>
 </html>
