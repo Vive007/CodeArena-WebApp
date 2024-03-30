@@ -28,74 +28,60 @@ const io = new socket.Server(server, {
 });
 
 // Object to store active lobbies
-const lobbies = {};
+const rooms = {};
 
 // Function to generate a random lobby ID
 function generateLobbyId() {
   return Math.random().toString(36).substring(2, 9);
 }
 
+
 io.on('connection', (socket) => {
-  socket.on('create_lobby', (userId, callback) => {
-      const lobbyId = generateLobbyId();
-      lobbies[lobbyId] = {
-          users: [{ id: socket.id, userId }]
-      };
-      callback(lobbyId);
-});
-
-socket.on('join_lobby', (lobbyId, userId, callback) => {
-  if (lobbies[lobbyId]) {
-      // Check if the lobby already has two users
-      if (lobbies[lobbyId].users.length >= 2) {
-        callback(false, 'Lobby is full');
-        return;
+    console.log('User connected:', socket.id);
+  
+    // Handle room creation
+    socket.on('createRoom', (roomName) => {
+      if (!rooms[roomName]) {
+        rooms[roomName] = { name: roomName, users: {} }; // Create room object
+        socket.join(roomName); // Join the created room
+        io.emit('roomCreated', roomName); // Broadcast room creation to all clients
+      } else {
+        socket.emit('roomExists', roomName); // Inform client if room already exists
       }
-      lobbies[lobbyId].users.push({ id: socket.id, userId });
-      callback(true);
-      // Notify everyone in the lobby about the new user
-      io.to(lobbyId).emit('user_joined', { userId });
-  } else {
-      callback(false);
-  }
-});
-
-
-socket.on('update_checkbox', (lobbyId, isChecked, checkboxId) => {
-  const lobby = lobbies[lobbyId];
-  if (lobby) {
-    const senderId = socket.id;
-    // const senderUsername = lobby.users.find(user => user.id === senderId).username;
-    const recipientId = lobby.users.find(user => user.id !== senderId).id;
-    io.to(recipientId).emit('checkbox_updated', { lobbyId, isChecked, checkboxId });
-  }
-});
-
-socket.on('start_timer', (lobbyId) => {
-  // Broadcast the event to all users in the lobby
-  io.to(lobbyId).emit('timer_started');
-});
-
-socket.on('disconnect', () => {
-  // Find and remove user from all lobbies
-  for (const lobbyId in lobbies) {
-      const index = lobbies[lobbyId].users.findIndex(user => user.id === socket.id);
-      if (index !== -1) {
-          const userId = lobbies[lobbyId].users[index].userId;
-          lobbies[lobbyId].users.splice(index, 1);
-          // Notify other users in the lobby about the disconnection
-          io.to(lobbyId).emit('user_left', { userId });
-          if (lobbies[lobbyId].users.length === 0) {
-              delete lobbies[lobbyId];
-          }
-          break; // Only need to remove from one lobby
+    });
+  
+    // Handle room joining
+    socket.on('joinRoom', (roomName) => {
+      if (rooms[roomName]) {
+        socket.join(roomName); // Join the specified room
+        rooms[roomName].users[socket.id] = username; // Add user to room's user list (assuming username is defined elsewhere)
+        io.to(roomName).emit('userJoined', username); // Broadcast user join to room members
+      } else {
+        socket.emit('roomNotFound', roomName); // Inform client if room doesn't exist
       }
-  }
-});
-
-
-});
-
-
+    });
+  
+    // Handle chat messages
+    socket.on('chatMessage', (message, roomName) => {
+      if (rooms[roomName]) {
+        io.to(roomName).emit('message', { username, message }); // Broadcast message to room members
+      } else {
+        socket.emit('roomNotFound', roomName); // Inform client if room doesn't exist (redundant check, but can be kept for clarity)
+      }
+    });
+  
+    // Handle user disconnection
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
+  
+      // Remove user from rooms and update room user list
+      for (const roomName in rooms) {
+        if (rooms[roomName].users[socket.id]) {
+          delete rooms[roomName].users[socket.id];
+          io.to(roomName).emit('userLeft', username); // Broadcast user leave to room members
+        }
+      }
+    });
+  });
 
 module.exports = server;

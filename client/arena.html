@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena page</title>
+</head>
+<body>
+    <h1>Arena page</h1>
+    <h2>Lobby ID: <span id="lobbyId"></span></h2>
+    <div id="chatBox">
+        <div id="messages"></div>
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+
+    <script>
+        var socket = io('http://localhost:3000');
+
+        // Function to get the value of a URL parameter by name
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        // Get the lobby ID and userId from the URL query parameters
+        var lobbyId = getParameterByName('lobbyId');
+        var userId = getParameterByName('userId');
+        // Update the HTML to display the lobby ID
+        document.getElementById('lobbyId').innerText = lobbyId;
+
+        // Function to send a message
+        function sendMessage() {
+            var message = document.getElementById('messageInput').value;
+            if (message.trim() !== '') {
+                socket.emit('chat_message', { lobbyId: lobbyId, userId: userId, message: message });
+                document.getElementById('messageInput').value = ''; // Clear input field
+            }
+        }
+
+        // Function to display a message
+        function displayMessage(message) {
+            var messagesDiv = document.getElementById('messages');
+            var messageDiv = document.createElement('div');
+            messageDiv.innerText = message;
+            messagesDiv.appendChild(messageDiv);
+        }
+
+        // Listen for incoming chat messages
+        socket.on('recieve_' + lobbyId, function(data) {
+    console.log('Received chat message:', data); // Log the received data
+    displayMessage(data.userId + ': ' + data.message);
+});
+    </script>
+</body>
+</html>
