@@ -28,7 +28,7 @@ const io = new socket.Server(server, {
 });
 
 // Object to store active lobbies
-const rooms = {};
+const lobbies ={};
 
 // Function to generate a random lobby ID
 function generateLobbyId() {
@@ -37,51 +37,58 @@ function generateLobbyId() {
 
 
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+
+  socket.on('createLobby', (userId, callback) => {
+      const lobbyId = generateLobbyId();
+      lobbies[lobbyId] = { lobbyId: lobbyId, usersId: [userId],sockets: [socket.id] };
+      socket.join(lobbyId);
   
-    // Handle room creation
-    socket.on('createRoom', (roomName) => {
-      if (!rooms[roomName]) {
-        rooms[roomName] = { name: roomName, users: {} }; // Create room object
-        socket.join(roomName); // Join the created room
-        io.emit('roomCreated', roomName); // Broadcast room creation to all clients
-      } else {
-        socket.emit('roomExists', roomName); // Inform client if room already exists
-      }
-    });
-  
-    // Handle room joining
-    socket.on('joinRoom', (roomName) => {
-      if (rooms[roomName]) {
-        socket.join(roomName); // Join the specified room
-        rooms[roomName].users[socket.id] = username; // Add user to room's user list (assuming username is defined elsewhere)
-        io.to(roomName).emit('userJoined', username); // Broadcast user join to room members
-      } else {
-        socket.emit('roomNotFound', roomName); // Inform client if room doesn't exist
-      }
-    });
-  
-    // Handle chat messages
-    socket.on('chatMessage', (message, roomName) => {
-      if (rooms[roomName]) {
-        io.to(roomName).emit('message', { username, message }); // Broadcast message to room members
-      } else {
-        socket.emit('roomNotFound', roomName); // Inform client if room doesn't exist (redundant check, but can be kept for clarity)
-      }
-    });
-  
-    // Handle user disconnection
-    socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
-  
-      // Remove user from rooms and update room user list
-      for (const roomName in rooms) {
-        if (rooms[roomName].users[socket.id]) {
-          delete rooms[roomName].users[socket.id];
-          io.to(roomName).emit('userLeft', username); // Broadcast user leave to room members
-        }
-      }
-    });
+      callback({ lobbyId: lobbyId });
   });
+  socket.on('joinLobby', ({ lobbyId, userId }, callback) => {
+    if (lobbies[lobbyId]) {
+        socket.join(lobbyId);
+        lobbies[lobbyId].usersId.push(userId); // Assuming you have a structure to store users in the lobby
+        lobbies[lobbyId].sockets.push(socket.id);
+        callback({ message: `User ${userId} has joined lobby ${lobbyId}` });
+    } else {
+        callback({ message: `Lobby ${lobbyId} does not exist` });
+    }
+  });
+
+  socket.on('send_info', ({ userId, lobbyId, info }) => {
+    // Assuming you have a structure to store info in the lobby
+    if (lobbies[lobbyId]) {
+        const infoData = {
+            userId: userId,
+            info: info,
+        };
+
+        if (!lobbies[lobbyId].infoData) {
+            lobbies[lobbyId].infoData = [];
+        }
+
+        lobbies[lobbyId].infoData.push(infoData);
+
+        // Emit the info data to all users in the lobby
+        io.to(lobbyId).emit('receive_info', infoData);
+    }
+  });
+
+
+  socket.on('disconnect', () => {
+    for (const lobbyId in lobbies) {
+        const index = lobbies[lobbyId].sockets.indexOf(socket.id);
+        if (index !== -1) {
+            lobbies[lobbyId].sockets.splice(index, 1);
+            console.log(`User disconnected from lobby ${lobbyId}`);
+        }
+    }
+    console.log(`User ${socket.userId} disconnected`);
+  });
+
+
+  
+});
 
 module.exports = server;
