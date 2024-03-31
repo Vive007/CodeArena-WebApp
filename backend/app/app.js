@@ -6,7 +6,9 @@ const socket = require('socket.io')
 const cors = require('cors');
 const mongoose=require('mongoose');
 const path=require('path')
-
+const authRoutes=require('./routes/authRoute');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const helloRouter = require('./routes/helloRouter');
 const getRandomCodeforcesProblem=require('./routes/getRandomCodeforcesProblem');
@@ -20,11 +22,27 @@ app.use('/api/hello', helloRouter());
 app.use('/api/getRandomCodeforcesProblem',getRandomCodeforcesProblem());
 // verifying codeforces user handle by the provided id and index
 app.use('/api/verifyCodeforcesUser',verifyCodeforcesUser());
+// database connection
+
+
+
+const dbURI='mongodb+srv://vkumar1972003:GbZ8N9irh1sZuTqm@cluster0.gc4tfxs.mongodb.net/CODECONNECTdB';
+mongoose.connect(dbURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // 5 seconds
+  socketTimeoutMS: 45000, // 45 seconds
+});
+
+
+
+
 
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname+"/public/loginSignup.html");
 });
+app.use(authRoutes);
 
 app.get('/signup', (req, res) => {
   res.sendFile(__dirname+"/public/codeforcesVerification.html");
