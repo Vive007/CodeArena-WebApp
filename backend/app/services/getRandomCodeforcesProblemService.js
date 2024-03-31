@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { json } = require('body-parser');
 
 const getRandomCodeforcesProblem = async () => {
     try {
@@ -9,7 +10,7 @@ const getRandomCodeforcesProblem = async () => {
             throw new Error('Index out of bounds');
         }
         const link = `https://codeforces.com/problemset/problem/${problems[rand].contestId}/${problems[rand].index}`;
-        return link;
+        return {link:link,problemId:problems[rand].contestId,index:problems[rand].index};
     } catch (error) {
         throw new Error('Failed to get problem link');
     }

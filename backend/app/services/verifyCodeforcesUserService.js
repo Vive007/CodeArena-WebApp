@@ -6,7 +6,7 @@ async function myCallback(id, index, userId) {
             params: { handle: userId, from: 1, count: 1 },
         });
     
-        const submittedId = response.data.result[0]['id'];
+        const submittedId = response.data.result[0]['contestId'];
         const submittedIndex = response.data.result[0]['problem']['index'];
         const verdict = response.data.result[0]['verdict'];
         

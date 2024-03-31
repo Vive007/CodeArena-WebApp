@@ -4,11 +4,16 @@ const http = require('http')
 const server = http.createServer(app)
 const socket = require('socket.io')
 const cors = require('cors');
+const mongoose=require('mongoose');
+const path=require('path')
 
 
 const helloRouter = require('./routes/helloRouter');
 const getRandomCodeforcesProblem=require('./routes/getRandomCodeforcesProblem');
 const verifyCodeforcesUser=require('./routes/verifyCodeforcesUser');
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine','ejs');
 
 app.use('/api/hello', helloRouter()); 
 // getting random problem from the codeforces
@@ -16,6 +21,16 @@ app.use('/api/getRandomCodeforcesProblem',getRandomCodeforcesProblem());
 // verifying codeforces user handle by the provided id and index
 app.use('/api/verifyCodeforcesUser',verifyCodeforcesUser());
 
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname+"/public/loginSignup.html");
+});
+
+app.get('/signup', (req, res) => {
+  res.sendFile(__dirname+"/public/codeforcesVerification.html");
+});
+//app.get('/',(req,res) => res.sendFile('./public/codeforcesVerification'));
+app.get('/smoothies',(req,res) =>res.render('smoothies'));
 
 
 // Apply CORS middleware to your Express app
