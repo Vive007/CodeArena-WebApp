@@ -94,6 +94,11 @@ body {
 .input-group input:focus {
     border: 0.125rem solid var(--primary-color);
 }
+.signup-button.disabled {
+    background-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+  }
 
 .form button {
     cursor: pointer;

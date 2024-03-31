@@ -17,28 +17,30 @@
     <!-- FORM SECTION -->
     <div class="row">
       <!-- SIGN UP -->
+     
       <div class="col align-items-center flex-col sign-up">
         <div class="form-wrapper align-items-center">
           <div class="form sign-up">
             <div class="input-group">
               <i class='bx bxs-user'></i>
-              <input type="text" placeholder="codeFroces-ID" required>
+              <input id="codeforcesId" type="text" placeholder="codeFroces-ID" required>
             </div>
+            <div id="passwordMatchMessage" style="color: grey; margin-top: 5px;"></div>
             <div class="input-group">
               <i class='bx bx-mail-send'></i>
-              <input type="email" placeholder="Email">
+              <input id="email" type="email" placeholder="Email" required>
             </div>
             <div class="input-group">
               <i class='bx bxs-lock-alt'></i>
-              <input type="password" placeholder="Password">
+              <input id="password" type="password" placeholder="Password" required>
             </div>
             <div class="input-group">
               <i class='bx bxs-lock-alt'></i>
-              <input type="password" placeholder="Confirm password">
-            </div><a href="/signup">
-            <button>
+              <input id="confirmPassword" type="password" placeholder="Confirm password" required>
+            </div>
+            <button id="signupButton" class="signup-button" disabled>
               Sign up
-            </button></a>
+            </button>
             <p>
               <span>
                 Already have an account?
@@ -113,6 +115,14 @@
   </div>
   <!-- You can link your JavaScript file here if needed -->
   <script src="js/loginSignup.js"></script>
+  <script src="js/signupForm.js"></script>
+
+
+ 
+
 </body>
+
+
+
 
 </html>
