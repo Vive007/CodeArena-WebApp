@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const { link, problemId, index } = data.link;
             const submissionLink = prompt("Submit a compilation error to this problem:", link);
+            window.open(submissionLink,'_blank');
             
             // Function to verify user using long polling
             const verifyUserLongPolling = async () => {
@@ -92,10 +93,47 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 await new Promise(resolve => setTimeout(resolve, 3000)); // Poll every 3 seconds
             }
-      
-            // Handle verification result
+            
+            // Get values from input fields
+            // const codeforcesId = document.getElementById("codeforcesId").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+        
+            // Create an object with the form data
+            const formData = {
+                codeforcesId: codeforcesId,
+                email: email,
+                password: password,
+                confirmPassword: confirmPassword
+            };
+            
+            if(verificationData.verify){
+                // Send a POST request to the server
+                fetch('http://localhost:3000/signup', {
+                    //method: 'POST',
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // You can add logic here to handle the response, such as showing a success message to the user
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // You can handle errors here, such as showing an error message to the user
+                });
+            }
+            else{
+                console.log("didnt send post request to store the data ");
+            }
+
             alert(verificationData.verify ? "Account verified!" : "Account not verified");
             // Open a new page in a new tab or window
+            if(verificationData.verify)
             window.location.href = "http://localhost:3000/";
         } catch (error) {
             console.error('Error:', error);

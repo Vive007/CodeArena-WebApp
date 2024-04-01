@@ -26,14 +26,15 @@ app.use('/api/verifyCodeforcesUser',verifyCodeforcesUser());
 
 
 
-const dbURI='mongodb+srv://vkumar1972003:GbZ8N9irh1sZuTqm@cluster0.gc4tfxs.mongodb.net/CODECONNECTdB';
-mongoose.connect(dbURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // 5 seconds
-  socketTimeoutMS: 45000, // 45 seconds
-});
+const dbURI='mongodb+srv://sudesh003:aj1COHHDYUo2YoRz@cluster0.gc4tfxs.mongodb.net/CODECONNECTdB';
+mongoose.connect(dbURI);
 
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', () => {
+  console.log('Connected to MongoDB!');
+  // You are connected to the database, you can start defining schemas and models here
+});
 
 
 
