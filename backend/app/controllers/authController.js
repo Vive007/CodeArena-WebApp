@@ -1,6 +1,9 @@
 const User=require('../models/User');
 const jwt=require('jsonwebtoken');
+const { userInfo } = require('os');
 // handle error
+require('dotenv').config();
+
 const handleErrors= (err) =>{
     
     console.log(err.message,err.code);
@@ -24,11 +27,14 @@ const handleErrors= (err) =>{
    return error;
 
 }
+
+
 const maxAge=3*24*60*60;
 // create jwt
 const createToken=(id)=>{
     // creating signature
-    return jwt.sign({id},'code connect vive007 &sudesh003 secrete',{
+    const secrete=process.env.SECRETE;
+    return jwt.sign({id},secrete,{
         expiresIn: maxAge
     });
 }
@@ -92,20 +98,7 @@ module.exports.signup_post = async (req, res) => {
     
    
 
-    // try {
-    //     const user = await User.create({codeforcesId, email, password });
-    //     res.status(201).json(user);
-    // } catch (err) {
-    //    const errors= handleErrors(err);
-    //     console.error(err); // Log the full error for debugging
-    //     //res.status(400).send(err.message || 'Error, user not created');
-    //     res.status(400).json({errors});
-    // }
-
-
-    // const filePath = path.join(__dirname, '../public/codeforcesVerification.html');
-    // res.sendFile(filePath);
-
+    
 
 
 
@@ -113,12 +106,30 @@ module.exports.login_get=(req,res)=>{
     const filePath = path.join(__dirname, '../public/loginSignup.html');
     res.sendFile(filePath);
 }
-module.exports.login_post= async(req,res)=>{
-    const {email,password}=req.body;
-    console.log(req.body);
-    const filePath = path.join(__dirname, '../public/loginSignup.html');
-    res.sendFile(filePath);
-}
+
+
+
+
+
+module.exports.login_post = async (req, res) => {
+  const { codeforcesId, password } = req.body;
+  try {
+      const user = await User.login(codeforcesId, password); // Corrected function name
+      res.status(200).json({ user: user._id });
+  } catch (err) {
+    // const errors=handleLoginErrors(err);
+      // console.log(err);
+      res.status(400).json({error:err.message});
+  }
+};
+
+
+
+
+
+
+
+
 module.exports.verify_gett= (req,res)=>{
     //const {email,password}=req.body;
     // console.log(req.body);

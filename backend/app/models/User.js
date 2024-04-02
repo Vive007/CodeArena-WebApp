@@ -7,14 +7,14 @@ const userSchema=new mongoose.Schema({
 
     codeForcesID:{
         type:String,
-        reqired:[true,'Please enter an codeForcesID'],
+        required:[true,'Please enter an codeForcesID'],
         unique:true,
         lowercase:true
        
     },
     email:{
         type:String,
-        reqired:[true,'Please enter an email'],
+        required:[true,'Please enter an email'],
         unique:true,
         lowercase:true,
         validate:[isEmail,'Please enter a valid email']
@@ -43,6 +43,18 @@ userSchema.pre('save',async function(next)
     next();
 });
 
+// static method to login usr
+userSchema.statics.login = async function (codeforcesId, password) {
+    const user = await User.findOne({ codeForcesID: codeforcesId });
+    if (user) {
+        const auth = await bcrypt.compare(password, user.password);
+        if (auth) {
+            return user;
+        }
+        throw new Error('Incorrect password');
+    }
+    throw new Error('User not registered');
+};
 
-const User=mongoose.model('User',userSchema);
-module.exports=User;
+const User = mongoose.model('User', userSchema);
+module.exports = User;

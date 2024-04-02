@@ -352,3 +352,18 @@ body {
         font-size: 2rem;
     }
 }
+
+  /* Add this CSS to your existing CSS file */
+.error-message {
+    display: none;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .error-message.show {
+    display: block;
+  }
+  
