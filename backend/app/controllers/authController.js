@@ -1,4 +1,5 @@
 const User=require('../models/User');
+const jwt=require('jsonwebtoken');
 // handle error
 const handleErrors= (err) =>{
     
@@ -23,6 +24,23 @@ const handleErrors= (err) =>{
    return error;
 
 }
+const maxAge=3*24*60*60;
+// create jwt
+const createToken=(id)=>{
+    // creating signature
+    return jwt.sign({id},'code connect vive007 &sudesh003 secrete',{
+        expiresIn: maxAge
+    });
+}
+
+
+
+
+
+
+
+
+
 // Middleware to parse JSON bodies
 const path=require('path')
 module.exports.signup_get=(req,res)=>{
@@ -43,7 +61,31 @@ module.exports.signup_post = async (req, res) => {
     console.log("Confirm Password:", confirmPassword);
     // verify the cf handle write code here 
 
+    const createUser = async (codeForcesID, email, password) => {
+        try {
+          const newUser = new User({
+            codeForcesID: codeForcesID,
+            email: email,
+            password: password
+          });
+      
+          const savedUser = await newUser.save();
+          const token=createToken(savedUser._id);
+          res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
+          res.status(201).json({user: savedUser._id});
+          console.log('New user created:', savedUser);
+        } catch (error) {
+          console.error('Error creating user:', error.message);
+          const errors =handleErrors(err);
+          res.status(400).json({errors});
 
+        }
+      };
+    
+      createUser(codeforcesId, email, password);
+    };
+
+//   res.status(200).json({ message: "User created successfully" });
 
 
 
@@ -51,7 +93,7 @@ module.exports.signup_post = async (req, res) => {
    
 
     // try {
-    //     const user = await User.create({ email, password });
+    //     const user = await User.create({codeforcesId, email, password });
     //     res.status(201).json(user);
     // } catch (err) {
     //    const errors= handleErrors(err);
@@ -63,7 +105,7 @@ module.exports.signup_post = async (req, res) => {
 
     // const filePath = path.join(__dirname, '../public/codeforcesVerification.html');
     // res.sendFile(filePath);
-}
+
 
 
 
@@ -88,5 +130,36 @@ module.exports.verify_gett= (req,res)=>{
     console.log("Confirm Password:", confirmPassword);
     const filePath = path.join(__dirname, '../public/codeforcesVerification.html');
     res.sendFile(filePath);
+}
+
+// module.exports.cookies_set=(req,res)=>
+// {
+//     res.setHeader('Set-Cookie','newUser=true');
+//     res.send('you got the cookies!');
+
+// }
+// module.exports.cookies_read=(req,res)=>
+// {
+    
+// }
+
+module.exports.verify_id=async(req,res)=>
+{
+    const { codeforcesId } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ codeForcesID: codeforcesId });
+
+    if (existingUser) {
+      res.json({ exists: true }); // User exists
+    } else {
+      res.json({ exists: false }); // User does not exist
+    }
+  } catch (error) {
+    console.error('Error checking user existence:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+//   res.json({ exists: false }); // User does not exist
+
 }
     

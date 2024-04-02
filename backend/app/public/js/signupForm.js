@@ -9,44 +9,126 @@ document.addEventListener("DOMContentLoaded", function () {
     const signupButton = document.getElementById("signupButton");
   
     // Function to check if all fields are filled and passwords match
+
+    function checkidValidity(codeforcesId) {
+        fetch('http://localhost:3000/idverify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ codeforcesId: codeforcesId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Handle response from server
+          if (data.exists) {
+            console.log(`User with Codeforces ID ${codeforcesId} already exists.`);
+            passwordMatchMessage.textContent = "User already exist";
+            passwordMatchMessage.style.color = "red";
+            signupButton.disabled = true;
+    signupButton.classList.add("disabled"); // Add disabled class
+            return false;
+            // You can display a message or update UI accordingly
+          } else {
+            console.log(`User with Codeforces ID ${codeforcesId} does not exist.`);
+            passwordMatchMessage.textContent = "";
+            signupButton.disabled = false;
+        signupButton.classList.remove("disabled"); // Remove disabled class
+
+
+            return true;
+            // You can display a message or update UI accordingly
+          }
+        })
+        .catch(error => {
+          console.error('Error checking Codeforces ID:', error);
+          // Handle error
+        });
+      }
+
+
+
+
+
+
+
+
+
+
+
     function checkFormValidity() {
       const codeforcesId = codeforcesIdInput.value;
       const email = emailInput.value;
       const password = passwordInput.value;
       const confirmPassword = confirmPasswordInput.value;
-  
-      // Check if any field is empty
-      const anyEmpty = codeforcesId === "" || email === "" || password === "" || confirmPassword === "";
-      const isPasswordEmpty=(password==="" || confirmPassword==="");
-  
-      // Check if passwords match
-      const passwordsMatch = (password === confirmPassword);
-  
-      if (anyEmpty || (isPasswordEmpty || !passwordsMatch) ) {
-        // Disable the button
-        signupButton.disabled = true;
-        signupButton.classList.add("disabled"); // Add disabled class
-      } else {
-        // Enable the button
-        signupButton.disabled = false;
+
+ const isPasswordEmpty=(password==="" || confirmPassword==="");
+ 
+ 
+ if(!isPasswordEmpty && (password!==confirmPassword))
+ {
+    passwordMatchMessage.textContent = "Passwords do not match";
+    passwordMatchMessage.style.color = "red";
+    signupButton.disabled = true;
+    signupButton.classList.add("disabled"); // Add disabled class
+   
+
+
+ }else if(!isPasswordEmpty&& (password===confirmPassword) &&((password.length < 6 || confirmPassword.length < 6)))
+ {
+    passwordMatchMessage.textContent = "Passwords must be at least 6 characters long";
+            passwordMatchMessage.style.color = "red";
+            signupButton.disabled = true;
+            signupButton.classList.add("disabled"); // Add disabled class
+           
+ }else if(!isPasswordEmpty&&password===confirmPassword)
+ {
+    passwordMatchMessage.textContent = "Passwords match";
+    passwordMatchMessage.style.color = "green";
+    signupButton.disabled = false;
         signupButton.classList.remove("disabled"); // Remove disabled class
-      }
-  
-      // Show password match message
-      if (passwordsMatch && !isPasswordEmpty) {
-        passwordMatchMessage.textContent = "Passwords match";
-        passwordMatchMessage.style.color = "green";
-      } else {
-        passwordMatchMessage.textContent = "Passwords do not match";
-        passwordMatchMessage.style.color = "red";
-      }
+   
+
+ }
+ 
+ 
+
     }
+
+
+      
+      codeforcesIdInput.addEventListener("input", () => {
+        const codeforcesId = codeforcesIdInput.value;
+      
+        if (codeforcesId.length === 0) {
+          // Clear any previous messages if input is empty
+          // You can add this logic if needed
+          return;
+        }
+      
+        checkidValidity(codeforcesId);
+      });
+      
+
+    
+
+
+
+
+
+
+
+
+
+    // checking the cf user is already register or not 
   
     // Event listeners for all input fields
-    codeforcesIdInput.addEventListener("input", checkFormValidity);
+    codeforcesIdInput.addEventListener("input", checkidValidity(codeforcesIdInput.value));
     emailInput.addEventListener("input", checkFormValidity);
     passwordInput.addEventListener("input", checkFormValidity);
     confirmPasswordInput.addEventListener("input", checkFormValidity);
+    // checkidValidity(codeforcesId);
+});
     // Event listeners for all input fields
     document.getElementById("signupButton").addEventListener("click", async () => {
         try {
@@ -141,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
       
-  });
+ 
   
 
 

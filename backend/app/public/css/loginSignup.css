@@ -99,7 +99,11 @@ body {
     color: #999;
     cursor: not-allowed;
   }
-
+  .signin-button.disabled {
+    background-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+  }
 .form button {
     cursor: pointer;
     width: 100%;

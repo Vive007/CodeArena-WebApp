@@ -5,10 +5,12 @@ const server = http.createServer(app)
 const socket = require('socket.io')
 const cors = require('cors');
 const mongoose=require('mongoose');
+const cookieParser=require('cookie-parser');
 const path=require('path')
 const authRoutes=require('./routes/authRoute');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const helloRouter = require('./routes/helloRouter');
 const getRandomCodeforcesProblem=require('./routes/getRandomCodeforcesProblem');
@@ -48,9 +50,20 @@ app.use(authRoutes);
 app.get('/signup', (req, res) => {
   res.sendFile(__dirname+"/public/codeforcesVerification.html");
 });
-//app.get('/',(req,res) => res.sendFile('./public/codeforcesVerification'));
-app.get('/smoothies',(req,res) =>res.render('smoothies'));
-
+// set cookies
+// app.get('/set-cookies',(req,res)=>
+// {
+//   res.cookie('newUser',true);
+//   res.cookie('isEmployee',true,{maxAge: 1000 *60*60*24});
+//   res.send("you got the cookies");
+// });
+// // read cookies
+// app.get('/read-cookies',(req,res)=>
+// {
+//   const cookies=req.cookies;
+//   console.log(cookies);
+//   res.json(cookies);
+// });
 
 // Apply CORS middleware to your Express app
 app.use(cors());

@@ -5,6 +5,13 @@ const { default: isEmail } = require('validator/lib/isEmail');
 // console.log(validator.isEmail("vivek"));
 const userSchema=new mongoose.Schema({
 
+    codeForcesID:{
+        type:String,
+        reqired:[true,'Please enter an codeForcesID'],
+        unique:true,
+        lowercase:true
+       
+    },
     email:{
         type:String,
         reqired:[true,'Please enter an email'],
@@ -16,7 +23,7 @@ const userSchema=new mongoose.Schema({
         type:String,
         required:[true,'Please enter an password'],
         minlength:[6,'Minumum password length is 6 characters'],
-    },
+    }
 });
 
 // fire a fucntion after doc saved to db
@@ -37,5 +44,5 @@ userSchema.pre('save',async function(next)
 });
 
 
-const User=mongoose.model('user',userSchema);
+const User=mongoose.model('User',userSchema);
 module.exports=User;
