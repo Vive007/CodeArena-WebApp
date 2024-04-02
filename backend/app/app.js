@@ -7,6 +7,7 @@ const cors = require('cors');
 const mongoose=require('mongoose');
 const cookieParser=require('cookie-parser');
 const path=require('path')
+ require('dotenv').config();
 const authRoutes=require('./routes/authRoute');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,7 +29,7 @@ app.use('/api/verifyCodeforcesUser',verifyCodeforcesUser());
 
 
 
-const dbURI='mongodb+srv://sudesh003:aj1COHHDYUo2YoRz@cluster0.gc4tfxs.mongodb.net/CODECONNECTdB';
+const dbURI=process.env.dbURI;
 mongoose.connect(dbURI);
 
 const db = mongoose.connection;
