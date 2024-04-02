@@ -87,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
     passwordMatchMessage.style.color = "green";
     signupButton.disabled = false;
         signupButton.classList.remove("disabled"); // Remove disabled class
+        checkidValidity(codeforcesIdInput.value);
    
 
  }
