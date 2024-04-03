@@ -54,10 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
         passwordMatchMessage.textContent = data.error;
         passwordMatchMessage.style.color = "red";
         passwordMatchMessage.classList.add("show"); // Show error message
-      } else {
+      } else if(data.user) {
         // No errors, move to another page or show success message
+        console.log(data.user);
+        
         console.log("move to another page");
         passwordMatchMessage.classList.remove("show"); // Hide error message
+        location.assign('/home');
       }
     })
     .catch(error => {
