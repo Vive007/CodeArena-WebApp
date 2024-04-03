@@ -7,6 +7,7 @@ const cors = require('cors');
 const mongoose=require('mongoose');
 const cookieParser=require('cookie-parser');
 const path=require('path')
+const {requireAuth, checkUser}=require('./Middleware/authMiddleware');
  require('dotenv').config();
 const authRoutes=require('./routes/authRoute');
 app.use(express.json());
@@ -42,15 +43,27 @@ db.once('open', () => {
 
 
 
+app.get('/*',checkUser);
+app.get('/chat',requireAuth, (req, res) => {
+  res.sendFile(__dirname+"/public/chat.html");
+});
+
+app.get('/home',requireAuth, (req, res) => {
+  // 
+  res.render('coderHome');
+});
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname+"/public/loginSignup.html");
 });
+
+
+
+
+
 app.use(authRoutes);
 
-app.get('/signup', (req, res) => {
-  res.sendFile(__dirname+"/public/codeforcesVerification.html");
-});
+
 // set cookies
 // app.get('/set-cookies',(req,res)=>
 // {

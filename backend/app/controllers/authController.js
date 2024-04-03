@@ -1,6 +1,7 @@
 const User=require('../models/User');
 const jwt=require('jsonwebtoken');
 const { userInfo } = require('os');
+
 // handle error
 require('dotenv').config();
 
@@ -115,6 +116,8 @@ module.exports.login_post = async (req, res) => {
   const { codeforcesId, password } = req.body;
   try {
       const user = await User.login(codeforcesId, password); // Corrected function name
+      const token=createToken(user._id);
+      res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
       res.status(200).json({ user: user._id });
   } catch (err) {
     // const errors=handleLoginErrors(err);
@@ -174,3 +177,11 @@ module.exports.verify_id=async(req,res)=>
 
 }
     
+module.exports.verify_user=(req,res)=>{
+  res.sendFile(__dirname+"/public/chat.html");
+}
+
+module.exports.logout_get=(req,res)=>{
+  res.cookie('jwt','',{maxAge:1});
+  res.redirect('/');
+}
