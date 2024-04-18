@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #group-container {
+            margin-bottom: 20px;
+        }
+
+        #messages {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #message {
+            width: calc(100% - 70px);
+            margin-right: 10px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        input[type="text"], button {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="group-container">
+        <input type="text" id="group-id" placeholder="Enter Group ID">
+        <button onclick="createGroup()">Create Group</button>
+        <button onclick="joinGroup()">Join Group</button>
+    </div>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input type="text" id="message" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.1.3/dist/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Function to create a new group
+        function createGroup() {
+            // Emit an event to the server to create a new group
+            socket.emit('createGroup');
+        }
+
+        // Function to join a group
+        function joinGroup() {
+            const groupId = document.getElementById('group-id').value;
+            socket.emit('joinGroup', groupId);
+        }
+
+        // Function to send a message
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            const groupId = document.getElementById('group-id').value;
+            socket.emit('chatMessage', { groupId, message });
+            document.getElementById('message').value = '';
+        }
+
+        // Function to display incoming messages
+        socket.on('chatMessage', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+        });
+    </script>
+</body>
+</html>
