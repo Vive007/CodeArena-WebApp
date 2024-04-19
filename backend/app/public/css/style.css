@@ -37,6 +37,15 @@ a {
 	border: 0;
 	font-size: 17px;
 }
+.btn1 {
+	cursor: pointer;
+	padding: 5px 15px;
+	background: var(--light-color);
+	color: var(--dark-color-a);
+	border: 0;
+	font-size: 17px;
+	margin-left: 28vw;
+}
 
 /* Chat Page */
 
@@ -222,7 +231,7 @@ a {
 }
 
 
-.Challenge{
+/* .Challenge{
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -233,4 +242,4 @@ a {
 	font-size: large;
 	background-color: green;
 	color: white;
-}
+} */

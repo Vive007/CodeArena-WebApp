@@ -366,6 +366,7 @@ setInterval(removeExpiredChallenges, 60 * 1000);
 // Endpoint to check and start challenge
 app.post('/api/checkAndStartChallenge', async (req, res) => {
   const { userId, problemId, index } = req.body;
+  console.log(userId);
 
   const existingIndex = challenges.findIndex(challenge => {
     // Convert challenge.problemId to a number for comparison
@@ -389,7 +390,8 @@ app.post('/api/checkAndStartChallenge', async (req, res) => {
     const problemId=removedChallenge.problemId;
     const index=removedChallenge.index;
     const opponentName=removedChallenge.opponentName; // Assuming opponentName is also needed
-
+    console.log(userId);
+    let user=userId;
     try {
       const response = await axios.post('http://localhost:3000/api/checkSubmissionStatus', {
         problemId,
@@ -397,18 +399,25 @@ app.post('/api/checkAndStartChallenge', async (req, res) => {
         userId,
         opponentName // assuming opponentName is defined somewhere in the scope
       });
+     // socket.emit('chatMessage',{username:username ,text:msg});
 
-      if (response.status === 200) {
-        // Get the winner from the response
-        const { winner } = response.data;
-        if (winner) {
-          // If there's a winner, announce them in the room using Socket.IO
-          io.emit('winnerAnnouncement', { winner });
-          console.log(winner);
-          return res.status(200).json({ message: `Winner announced: ${winner}` });
-          // console.log(winner);
-        }
+     if (response.status === 200) {
+      // Get the winner from the response
+      const { winner } = response.data;
+      if (winner) {
+          // If there's a winner, construct message object
+          console.log(userId);
+          const msg = {
+              username: user,
+              opponentName: opponentName,
+              winner: winner
+          };
+          console.log(msg);
+          // Return JSON response with the message
+          return res.status(200).json({ message: msg });
       }
+  }
+  
 
       // If no winner within 30 seconds, announce in the room
       io.emit('winnerAnnouncement', { winner: 'No winner within 30 seconds' });
@@ -459,7 +468,7 @@ const verify = async (id, index, userId) => {
       const timeoutID = setTimeout(() => {
           clearInterval(intervalID);
           resolve(false);
-      }, 60000);
+      }, 6000);
   });
 };
 
@@ -483,7 +492,7 @@ app.post('/api/checkSubmissionStatus', async (req, res) => {
       } else if (!userVerified && opponentVerified) {
           winner = opponentName;
       } else {
-          winner = null; // No winner within the specified time
+          winner = "Tie"; // No winner within the specified time
       }
       console.log(winner);
       res.status(200).json({ winner });

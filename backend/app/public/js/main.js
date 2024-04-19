@@ -48,7 +48,8 @@ socket.on('roomUsers', ({ room, users }) => {
 });
 
 socket.on('winnerAnnouncement', ({ winner }) => {
-  outputMessage(`Winner is ${winner}`);
+  console.log(winner);
+  // outputMessage(`Winner is ${winner}`);
 });
 
 // Message from server
@@ -85,8 +86,14 @@ socket.on('message', async (message) => {
       if (!response.ok) {
         throw new Error('Failed to check and start challenge');
       }
+      const data = await response.json();
 
-      console.log('Check and start challenge successful');
+      if (data.message) {
+          const { username, opponentName, winner } = data.message;
+          const msg=`challenge ${username} vs ${opponentName}\n Winner: ${winner}`;
+          socket.emit('chatMessage',{username:"codeconect-bot" ,text:msg});
+      }
+      // console.log(response);
     } catch (error) {
       console.error('Error:', error.message);
       // Handle error
@@ -184,7 +191,8 @@ document.getElementById('challenge-btn-id').addEventListener('click', async func
       var msg = `I am challenging ${opponentName} to solve the problem ${link}\n`;
       msg += `To accept the challenge ${opponentName} should type: @accept ${problemId} ${index}`;
       
-      socket.emit('chatMessage', msg);
+      // 
+      socket.emit('chatMessage',{username:username ,text:msg});
 
 
       const challengeData = {
