@@ -188,3 +188,17 @@ a {
 		display: none;
 	}
 }
+
+
+.Challenge{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 5vh;
+	width: 5vw;
+}
+.Challenge-btn{
+	font-size: large;
+	background-color: green;
+	color: white;
+}
