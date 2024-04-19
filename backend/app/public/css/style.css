@@ -18,7 +18,7 @@ body {
 	font-family: 'Roboto', sans-serif;
 	font-size: 16px;
 	background: var(--light-color);
-	margin: 20px;
+	margin: 5%;
 }
 
 ul {
@@ -64,31 +64,35 @@ a {
 }
 
 .chat-sidebar {
-	background: var(--dark-color-b);
-	color: #fff;
-	padding: 20px 20px 60px;
-	overflow-y: scroll;
+    background: var(--dark-color-b);
+    color: #fff;
+    padding: 20px 20px 60px;
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .chat-sidebar h2 {
-	font-size: 20px;
-	background: rgba(0, 0, 0, 0.1);
-	padding: 10px;
-	margin-bottom: 20px;
+    font-size: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    margin-bottom: 20px;
 }
 
 .chat-sidebar h3 {
-	margin-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.chat-sidebar ul {
+    margin-bottom: 0; /* Remove default margin */
 }
 
 .chat-sidebar ul li {
-	padding: 10px 0;
+    padding: 10px 0;
 }
 
 .chat-messages {
 	padding: 30px;
 	max-height: 500px;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 
 .chat-messages .message {
@@ -178,6 +182,34 @@ a {
 	margin-top: 20px;
 	width: 100%;
 }
+.chat-form-container {
+    padding: 20px 30px;
+    background-color: var(--dark-color-a);
+    display: flex; /* Use flexbox */
+    justify-content: space-between; /* Align items with space between them */
+    align-items: center; /* Align items vertically */
+}
+
+.chat-form-container form {
+    display: flex; /* Use flexbox */
+    flex-grow: 1; /* Let the form grow to fill the available space */
+}
+
+.chat-form-container input[type='text'] {
+    font-size: 16px;
+    padding: 5px;
+    height: 40px;
+    flex-grow: 1; /* Let the input grow to fill the available space */
+}
+
+.chat-form-container .btn {
+    padding: 5px 15px;
+    background: var(--light-color);
+    color: var(--dark-color-a);
+    border: 0;
+    font-size: 17px;
+}
+
 
 @media (max-width: 700px) {
 	.chat-main {

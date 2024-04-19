@@ -3,16 +3,29 @@ const app = express();
 const http = require('http')
 const server = http.createServer(app)
 const socket = require('socket.io')
+const Message = require('./models/Message');
 const cors = require('cors');
 const mongoose=require('mongoose');
 const cookieParser=require('cookie-parser');
 const path=require('path')
 const {requireAuth, checkUser}=require('./Middleware/authMiddleware');
+const moment = require('moment');
  require('dotenv').config();
 const authRoutes=require('./routes/authRoute');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+//check here if not work
+
+//const io = socket(server);
+const io = new socket.Server(server, {
+  cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+  },
+});
+
 
 const helloRouter = require('./routes/helloRouter');
 const getRandomCodeforcesProblem=require('./routes/getRandomCodeforcesProblem');
@@ -39,9 +52,11 @@ db.once('open', () => {
   console.log('Connected to MongoDB!');
   // You are connected to the database, you can start defining schemas and models here
 });
+Message.deleteMany({});
 
-
-
+// Middleware to parse JSON bodies
+app.use(express.json());
+app.use(express.static('public'));
 
 app.get('/*',checkUser);
 app.get('/chat',requireAuth, (req, res) => {
@@ -63,6 +78,95 @@ app.get('/', (req, res) => {
 
 app.use(authRoutes);
 
+// implementing chat message handler
+
+io.on('connection', (socket) => {
+  console.log('New WebSocket connection');
+
+  socket.on('chatMessage', async (msgData) => {
+    try {
+      console.log(msgData);
+      const formattedTime = moment().format('h:mm a');
+      const user = getCurrentUser(socket.id); 
+      // Store the message in MongoDB
+      const message = new Message({
+        username: msgData.username,
+        text: msgData.text,
+        time: formattedTime,
+        room: user.room
+        // Additional fields if needed
+      });
+      await message.save();
+    //  await  Message.deleteMany({});
+
+      // Broadcast the message to all clients including the sender
+     //io.emit('message', message);
+     io.to(user.room).emit('message', message);
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
+  });
+});
+
+// Route to fetch chat messages
+// app.get('/messages', async (req, res) => {
+//   try {
+//     const messages = await Message.find().sort({ time: -1 }).limit(20); // Assuming 'time' is the field to sort by
+//     const formattedMessages = messages.map(message => ({
+//       username: message.username,
+//       text: message.text,
+//       time: message.time,
+//       room:message.room
+//     }));
+//     res.json(formattedMessages);
+//   } catch (error) {
+//     console.error('Error fetching chat messages:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+// new updated one 
+app.get('/messages', async (req, res) => {
+  try {
+    const roomName = req.query.room; // Assuming the room name is passed as a query parameter
+
+    if (!roomName) {
+      return res.status(400).json({ error: 'Room name is required' });
+    }
+
+    const messages = await Message.find({ room: roomName }).sort({ time: -1 }).limit(20); // Filter messages by room name
+    const formattedMessages = messages.map(message => ({
+      username: message.username,
+      text: message.text,
+      time: message.time,
+      room: message.room
+    }));
+    res.json(formattedMessages);
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // set cookies
 // app.get('/set-cookies',(req,res)=>
@@ -81,12 +185,12 @@ app.use(authRoutes);
 
 // Apply CORS middleware to your Express app
 app.use(cors());
-const io = new socket.Server(server, {
-  cors: {
-      origin: '*',
-      methods: ['GET', 'POST'],
-  },
-});
+// const io = new socket.Server(server, {
+//   cors: {
+//       origin: '*',
+//       methods: ['GET', 'POST'],
+//   },
+// });
 
 // // Object to store active lobbies
 // const lobbies ={};
@@ -201,9 +305,11 @@ io.on("connection", (socket) => {
 
   // Listen for chatMessage
   socket.on("chatMessage", (msg) => {
+    console.log(msg);
+    //console.log("bibekk");
     const user = getCurrentUser(socket.id);
-
-    io.to(user.room).emit("message", formatMessage(user.username, msg));
+    
+    //io.to(user.room).emit("message", formatMessage);
   });
 
   // Runs when client disconnects

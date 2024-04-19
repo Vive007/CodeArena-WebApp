@@ -2,16 +2,44 @@ const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
-
+const socket = io();
+//const Qs = require('qs');
 // Get username and room from URL
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
+console.log(username);
 
-const socket = io();
+
+// // Join chatroom
+// socket.emit('joinRoom', { username, room });
+// Call fetchChatMessages when the page loads
+window.addEventListener('load', fetchChatMessages);
+// Function to fetch chat messages from the server
+async function fetchChatMessages() {
+    try {
+      const response = await fetch(`/messages?room=${room}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch chat messages');
+      }
+      const messages = await response.json();
+      messages.forEach((message) => {
+        outputMessage(message);
+      });
+      // Scroll down
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+    }
+  }
 
 // Join chatroom
-socket.emit('joinRoom', { username, room });
+socket.on('connect', () => {
+    const { username, room } = Qs.parse(location.search, {
+      ignoreQueryPrefix: true,
+    });
+    socket.emit('joinRoom', { username, room });
+  });
 
 // Get room and users
 socket.on('roomUsers', ({ room, users }) => {
@@ -85,7 +113,8 @@ chatForm.addEventListener('submit', (e) => {
   }
 
   // Emit message to server
-  socket.emit('chatMessage', msg);
+//   socket.emit('chatMessage', msg);
+socket.emit('chatMessage', {username, text: msg });
 
   // Clear input
   e.target.elements.msg.value = '';
@@ -127,7 +156,7 @@ function outputUsers(users) {
 document.getElementById('leave-btn').addEventListener('click', () => {
   const leaveRoom = confirm('Are you sure you want to leave the chatroom?');
   if (leaveRoom) {
-    window.location = '../start.html';
+    window.location.href = '/chat';
   } else {
   }
 });
