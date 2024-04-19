@@ -47,14 +47,64 @@ socket.on('roomUsers', ({ room, users }) => {
   outputUsers(users);
 });
 
+socket.on('winnerAnnouncement', ({ winner }) => {
+  console.log(winner);
+  // outputMessage(`Winner is ${winner}`);
+});
+
 // Message from server
-socket.on('message', (message) => {
+socket.on('message', async (message) => {
   console.log(message);
   outputMessage(message);
+
+  // Check if the message contains the accept pattern
+  const acceptPattern = /^@accept (\d+) ([a-zA-Z]+\d*)$/;
+  const match = message.text.match(acceptPattern);
+
+  if (match) {
+    // Extract problemId and index from the matched pattern
+    const problemId = match[1];
+    const index = match[2];
+
+    // Perform further actions with problemId and index
+    // For example, you can send this information to the backend
+    // or trigger some other functionality
+    console.log('Accept command detected:');
+    console.log('Problem ID:', problemId);
+    console.log('Index:', index);
+
+    try {
+      // Send the data to the backend
+      const response = await fetch('http://localhost:3000/api/checkAndStartChallenge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: message.username, problemId, index })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check and start challenge');
+      }
+      const data = await response.json();
+
+      if (data.message) {
+          const { username, opponentName, winner } = data.message;
+          const msg=`challenge ${username} vs ${opponentName}\n Winner: ${winner}`;
+          socket.emit('chatMessage',{username:"codeconect-bot" ,text:msg});
+      }
+      // console.log(response);
+    } catch (error) {
+      console.error('Error:', error.message);
+      // Handle error
+    }
+  }
 
   // Scroll down
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
+
+
 
 // Message submit
 chatForm.addEventListener('submit', (e) => {
@@ -115,5 +165,56 @@ document.getElementById('leave-btn').addEventListener('click', () => {
   if (leaveRoom) {
     window.location.href = '/chat';
   } else {
+  }
+});
+
+
+document.getElementById('challenge-btn-id').addEventListener('click', async function() {
+  // Prompt user for opponent's name
+  var opponentName = prompt('Enter opponent\'s name:');
+  if (opponentName) {
+    try {
+      const response = await fetch('http://localhost:3000/api/getRandomCodeforcesProblem');
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      if (!data.link) {
+          throw new Error('Some error occurred. Please reload the page');
+      }
+      
+      const { link, problemId, index } = data.link;
+
+      // Do something with the fetched data, like displaying it to the user
+      console.log('Problem received:', link, problemId, index);
+      // Construct the message
+      var msg = `I am challenging ${opponentName} to solve the problem ${link}\n`;
+      msg += `To accept the challenge ${opponentName} should type: @accept ${problemId} ${index}`;
+      
+      // 
+      socket.emit('chatMessage',{username:username ,text:msg});
+
+
+      const challengeData = {
+        userId: 'algorithm003', // Replace 'yourUserId' with the actual user ID
+        opponentName: opponentName,
+        problemId: problemId,
+        index: index
+      };
+
+      // Send challenge data to the backend
+      const backendResponse = await fetch('http://localhost:3000/api/storeChallengeData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(challengeData)
+      });
+
+    } catch (error) {
+      // Handle errors
+      console.error('Error:', error.message);
+      // Display an error message to the user, if needed
+    }
   }
 });

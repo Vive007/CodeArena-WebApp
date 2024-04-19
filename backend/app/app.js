@@ -272,6 +272,7 @@ const {
   userLeave,
   getRoomUsers,
 } = require("./utils/users");
+const axios = require('axios');
 
 const botName = "ChatCord Bot";
 
@@ -329,5 +330,177 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+
+// Array to store challenge data
+let challenges = [];
+
+// Endpoint to store challenge data
+app.post('/api/storeChallengeData', (req, res) => {
+  const { userId, opponentName, problemId, index } = req.body;
+
+  // Add challenge data to the array
+  challenges.push({
+    userId: userId,
+    opponentName: opponentName,
+    problemId: problemId,
+    index: index,
+    timestamp: Date.now() // Store current timestamp
+  });
+
+  console.log(challenges);
+
+  // Send response
+  res.status(200).json({ message: 'Challenge data stored successfully' });
+});
+
+// Function to remove expired challenges
+function removeExpiredChallenges() {
+  const now = Date.now();
+  challenges = challenges.filter(challenge => now - challenge.timestamp <= 5 * 60 * 1000);
+}
+
+// Set interval to remove expired challenges every minute
+setInterval(removeExpiredChallenges, 60 * 1000);
+
+// Endpoint to check and start challenge
+app.post('/api/checkAndStartChallenge', async (req, res) => {
+  const { userId, problemId, index } = req.body;
+  console.log(userId);
+
+  const existingIndex = challenges.findIndex(challenge => {
+    // Convert challenge.problemId to a number for comparison
+    const challengeProblemId = parseInt(challenge.problemId);
+    // Convert problemId to a number for comparison
+    const numericProblemId = parseInt(problemId);
+
+    const isOpponentNameMatch = challenge.opponentName === userId;
+    const isProblemIdMatch = challengeProblemId === numericProblemId;
+    const isIndexMatch = challenge.index === index;
+    console.log(isOpponentNameMatch && isProblemIdMatch && isIndexMatch);
+    return isOpponentNameMatch && isProblemIdMatch && isIndexMatch;
+  });
+
+  if (existingIndex !== -1) {
+    // If the combination exists, remove it from the array
+    const removedChallenge = challenges.splice(existingIndex, 1)[0];
+
+    // Send the removed challenge data to the new API endpoint startchallenge
+    const userId=removedChallenge.userId;
+    const problemId=removedChallenge.problemId;
+    const index=removedChallenge.index;
+    const opponentName=removedChallenge.opponentName; // Assuming opponentName is also needed
+    console.log(userId);
+    let user=userId;
+    try {
+      const response = await axios.post('http://localhost:3000/api/checkSubmissionStatus', {
+        problemId,
+        index,
+        userId,
+        opponentName // assuming opponentName is defined somewhere in the scope
+      });
+     // socket.emit('chatMessage',{username:username ,text:msg});
+
+     if (response.status === 200) {
+      // Get the winner from the response
+      const { winner } = response.data;
+      if (winner) {
+          // If there's a winner, construct message object
+          console.log(userId);
+          const msg = {
+              username: user,
+              opponentName: opponentName,
+              winner: winner
+          };
+          console.log(msg);
+          // Return JSON response with the message
+          return res.status(200).json({ message: msg });
+      }
+  }
+  
+
+      // If no winner within 30 seconds, announce in the room
+      io.emit('winnerAnnouncement', { winner: 'No winner within 30 seconds' });
+      return res.status(200).json({ message: 'No winner within 30 seconds' });
+    } catch (error) {
+      console.error('Error:', error.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+});
+
+
+
+async function myCallback(id, index, userId) {
+  try {
+      const response = await axios.get('https://codeforces.com/api/user.status', {
+          params: { handle: userId, from: 1, count: 1 },
+      });
+  
+      const submittedId = response.data.result[0]['contestId'];
+      const submittedIndex = response.data.result[0]['problem']['index'];
+      const verdict = response.data.result[0]['verdict'];
+      
+      if (submittedId == id && submittedIndex == index && verdict == "OK") {
+          return true;
+      } else {
+          return false;
+      }
+  } catch (error) {
+      console.error('Failed to fetch data from Codeforces API:', error.message);
+      return false;
+  }
+}
+
+const verify = async (id, index, userId) => {
+  return new Promise(async (resolve, reject) => {
+      let verified = false;
+      let intervalID;
+      intervalID = setInterval(async () => {
+          verified = await myCallback(id, index, userId);
+          if (verified) {
+              clearInterval(intervalID);
+              clearTimeout(timeoutID);
+              resolve(true);
+          }
+      }, 3000);
+
+      const timeoutID = setTimeout(() => {
+          clearInterval(intervalID);
+          resolve(false);
+      }, 6000);
+  });
+};
+
+// Endpoint to check submission status
+app.post('/api/checkSubmissionStatus', async (req, res) => {
+  const { problemId, index, userId, opponentName } = req.body;
+
+  try {
+      // Verify submission for both users
+      const userSubmission = verify(problemId, index, userId);
+      const opponentSubmission = verify(problemId, index, opponentName);
+
+      // Wait for both submissions to be verified
+      console.log("before");
+      const [userVerified, opponentVerified] = await Promise.all([userSubmission, opponentSubmission]);
+      console.log("after");
+      // Determine the winner based on who submits first
+      let winner;
+      if (userVerified && !opponentVerified) {
+          winner = userId;
+      } else if (!userVerified && opponentVerified) {
+          winner = opponentName;
+      } else {
+          winner = "Tie"; // No winner within the specified time
+      }
+      console.log(winner);
+      res.status(200).json({ winner });
+  } catch (error) {
+      console.error('Error:', error.message);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 module.exports = server;
